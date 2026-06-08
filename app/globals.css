@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+/* Interswitch Modal Styles - ensure modal is interactive */
+/* Target the overlay/backdrop that Interswitch creates */
+.webpay-overlay,
+.webpay-modal-overlay,
+[id*="interswitch"] .overlay,
+[id*="interswitch"] .modal-overlay,
+div[class*="overlay"][class*="webpay"],
+.isw-overlay,
+.isw-modal-overlay {
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
+
+/* Target the modal container itself */
+.webpay-modal,
+.webpay-checkout-modal,
+[id*="interswitch"] .modal,
+[id*="interswitch"] [class*="modal"],
+.isw-modal,
+.isw-checkout-container {
+  z-index: 10001 !important;
+  pointer-events: auto !important;
+}
+
+/* Target iframes */
+iframe[id*="interswitch"],
+iframe[name*="interswitch"],
+iframe[class*="webpay"],
+iframe[class*="isw"] {
+  z-index: 10001 !important;
+  pointer-events: auto !important;
+}
+
+/* Ensure any Interswitch injected divs are interactive */
+div[id*="interswitch"],
+div[class*="webpay"],
+div[class*="isw-"] {
+  pointer-events: auto !important;
+}
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
