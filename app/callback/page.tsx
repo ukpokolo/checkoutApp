@@ -20,8 +20,8 @@ function CallbackHandler() {
     }
 
     // Cross-check txnref against what we stored before redirecting to Interswitch
-    const storedTxnref = sessionStorage.getItem("txnref");
-    const storedAmount = sessionStorage.getItem("amount");
+    const storedTxnref = sessionStorage.getItem("txn_ref");
+    const storedAmount = sessionStorage.getItem("txn_amount");
 
     if (txnref !== storedTxnref) {
       // txnref mismatch — possible tamper or stale session

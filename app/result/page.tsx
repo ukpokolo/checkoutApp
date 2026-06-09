@@ -47,7 +47,7 @@ function ResultHandler() {
   if (!hasRequiredParams && !reason) {
     return (
       <FailureView
-        reason="Invalid payment session. Missing transaction reference or amount."
+        reason="Transaction could not be completed. Please try again later."
         txnref=""
       />
     );
