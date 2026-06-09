@@ -116,7 +116,6 @@ export default function CheckoutPage() {
         cust_email: result.customerEmail,
         cust_name: result.customerName,
         cust_mobile_no: result.customerPhone,
-        hash: result.hash,
         // site_redirect_url is unused in inline mode but required by the SDK signature.
         // We set it as a fallback in case the user's browser blocks the popup.
         site_redirect_url: result.redirectUrl,

@@ -18,22 +18,19 @@ export async function GET(req: NextRequest) {
   if (!txnRef || !amount) {
     return NextResponse.json(
       { error: "txnRef and amount are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const claimedAmount = Number(amount);
   if (isNaN(claimedAmount) || claimedAmount <= 0) {
-    return NextResponse.json(
-      { error: "Invalid amount" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
   }
 
   try {
     const isTest = process.env.NEXT_PUBLIC_INTERSWITCH_ENV === "TEST";
     const requeryBase = isTest
-      ? "https://sandbox.interswitchng.com"
+      ? "https://qa.interswitchng.com"
       : "https://webpay.interswitchng.com";
 
     const requeryRes = await fetch(
@@ -45,17 +42,20 @@ export async function GET(req: NextRequest) {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
+
+    console.log(requeryRes);
 
     if (!requeryRes.ok) {
       return NextResponse.json(
         { error: "Requery request failed" },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
     const data: ISWTransactionResponse = await requeryRes.json();
+    console.log(">>>>>>>>>", data);
     const responseCode = data.ResponseCode ?? "XX";
 
     // Step 3 — server-side amount validation.
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
           responseCode: "XX",
           message: "Amount mismatch. Transaction could not be verified.",
         },
-        { status: 200 } // 200 so the client FSM handles it gracefully
+        { status: 200 }, // 200 so the client FSM handles it gracefully
       );
     }
 
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
         responseCode: "XX",
         message: "Network error during verification",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

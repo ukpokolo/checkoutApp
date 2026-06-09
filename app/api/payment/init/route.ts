@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateInterswitchHash } from "@/lib/utils";
 
 function generateTxnRef(): string {
   return `TXN-${Date.now()}-${Math.random().toString(36).slice(2).toUpperCase()}`;
@@ -19,10 +18,6 @@ export async function POST(req: NextRequest) {
 
     const txnRef = generateTxnRef();
     const merchantCode = process.env.INTERSWITCH_MERCHANT_CODE!;
-    const secretKey = process.env.INTERSWITCH_SECRET_KEY!;
-    
-    // Generate hash for transaction integrity (required by Interswitch)
-    const hash = generateInterswitchHash(txnRef, merchantCode, amount, secretKey);
 
     return NextResponse.json({
       txnRef,
@@ -34,7 +29,6 @@ export async function POST(req: NextRequest) {
       customerEmail,
       customerName,
       customerPhone,
-      hash,
     });
   } catch {
     return NextResponse.json(
