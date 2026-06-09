@@ -17,6 +17,7 @@ interface InitPaymentResult {
   customerEmail: string;
   customerName: string;
   customerPhone: string;
+  hash: string;
 }
 
 interface VerifyPaymentResult {

@@ -23,6 +23,15 @@ declare global {
   }
 }
 
+// Actual shape returned by the Interswitch inline widget's onComplete callback.
+// The SDK uses `resp` (not `responseCode`) and `txnref` (lowercase, no capital R).
+interface ISWCallbackResponse {
+  resp: string;       // response code e.g. "00"
+  txnref: string;     // transaction reference
+  amount?: string;    // amount in kobo as a string
+  desc?: string;      // human-readable description
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -41,9 +50,8 @@ export default function CheckoutPage() {
     dispatch(resetPayment());
   }, [dispatch]);
 
-  // FSM-driven navigation — same pattern as luxe2
+  // FSM-driven navigation
   useEffect(() => {
-    // Skip redirect on initial mount to allow state reset to complete
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
@@ -108,20 +116,23 @@ export default function CheckoutPage() {
         cust_email: result.customerEmail,
         cust_name: result.customerName,
         cust_mobile_no: result.customerPhone,
+        hash: result.hash,
+        // site_redirect_url is unused in inline mode but required by the SDK signature.
+        // We set it as a fallback in case the user's browser blocks the popup.
         site_redirect_url: result.redirectUrl,
-        mode: process.env.NEXT_PUBLIC_INTERSWITCH_ENV === "TEST" ? "TEST" : "LIVE",
-        onComplete: (response: { responseCode: string; txnref: string }) => {
-          sessionStorage.setItem("txn_ref", response.txnref);
-          dispatch(
-            sdkCompleted({
-              responseCode: response.responseCode,
-              txnRef: response.txnref,
-            })
-          );
+        mode:
+          process.env.NEXT_PUBLIC_INTERSWITCH_ENV === "TEST" ? "TEST" : "LIVE",
+        onComplete: (response: ISWCallbackResponse) => {
+          // The widget returns `resp` for the response code and `txnref` (all lowercase).
+          const responseCode = response.resp;
+          const txnref = response.txnref;
+
+          sessionStorage.setItem("txn_ref", txnref);
+          dispatch(sdkCompleted({ responseCode, txnRef: txnref }));
         },
         onClose: () => {
-          // User closed modal without completing — go back to idle
-            dispatch(setFailed("Payment cancelled by user."));
+          // User dismissed the modal without completing payment
+          dispatch(setFailed("Payment cancelled by user."));
         },
       });
     } catch {
@@ -129,7 +140,10 @@ export default function CheckoutPage() {
     }
   }
 
-  const isProcessing = isInitiating || paymentStatus === "initiating" || paymentStatus === "processing";
+  const isProcessing =
+    isInitiating ||
+    paymentStatus === "initiating" ||
+    paymentStatus === "processing";
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
@@ -141,19 +155,23 @@ export default function CheckoutPage() {
         </p>
       </div>
 
-      <div className="w-full max-w-md space-y-6">
-        {/* Order Summary */}
-        <OrderSummary product={product} />
-
+      <div className="w-full max-w-4xl flex md:flex-row flex-col-reverse items-stretch gap-6">
         {/* Customer Form */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex-1 bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Customer Details
           </h2>
-          <CustomerForm
-            onSubmit={handleFormSubmit}
-            isLoading={isProcessing}
-          />
+          <div className="flex-1 flex flex-col justify-center">
+            <CustomerForm
+              onSubmit={handleFormSubmit}
+              isLoading={isProcessing}
+            />
+          </div>
+        </div>
+
+        {/* Order Summary */}
+        <div className="flex-1">
+          <OrderSummary product={product} />
         </div>
       </div>
 

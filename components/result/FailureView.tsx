@@ -1,9 +1,17 @@
+"use client";
+
 import Link from "next/link";
 
 type Props = {
   reason: string;
   txnref: string;
 };
+
+function handleTryAgain() {
+  // Clear stale transaction data when starting fresh
+  sessionStorage.removeItem("txn_ref");
+  sessionStorage.removeItem("txn_amount");
+}
 
 const reasonMessages: Record<string, string> = {
   ref_mismatch: "Transaction reference mismatch. This payment cannot be verified.",
@@ -31,6 +39,7 @@ export default function FailureView({ reason, txnref }: Props) {
 
         <Link
           href="/checkout"
+          onClick={handleTryAgain}
           className="block w-full mt-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
         >
           Try Again

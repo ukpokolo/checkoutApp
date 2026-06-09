@@ -8,7 +8,7 @@ type Props = {
 
 export default function OrderSummary({ product }: Props) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 w-full max-w-md">
+    <div className="bg-white h-full rounded-2xl shadow-sm border border-gray-100 p-6 w-full flex flex-col">
       {/* Product Image */}
       <div className="relative w-full h-56 rounded-xl overflow-hidden bg-gray-50 mb-6">
         <Image
@@ -30,7 +30,7 @@ export default function OrderSummary({ product }: Props) {
       <div className="border-t border-gray-100 my-4" />
 
       {/* Price Breakdown */}
-      <div className="space-y-2 text-sm">
+      <div className="space-y-2 text-sm flex-1">
         <div className="flex justify-between text-gray-600">
           <span>Subtotal</span>
           <span>{formatToNaira(product.price)}</span>

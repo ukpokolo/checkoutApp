@@ -1,44 +1,50 @@
 "use client";
 
-import { useEffect } from "react";
+/**
+ * /callback — Web Redirect flow only.
+ *
+ * This page is NOT triggered during Inline Checkout. With the inline widget,
+ * the payment result arrives through the `onComplete` callback in checkout/page.tsx,
+ * and navigation is handled by the FSM in paymentSlice.
+ *
+ * This page exists as a fallback for the Web Redirect integration option,
+ * where Interswitch POSTs back to `site_redirect_url` after payment.
+ *
+ * IMPORTANT: The docs warn that the redirect POST params (resp, amount, txnref)
+ * must NOT be trusted to determine outcome — always requery server-side.
+ * This page simply forwards to /result which does the real verification.
+ *
+ * Note: Interswitch sends this as a browser form POST (application/x-www-form-urlencoded),
+ * so the params arrive in the POST body, NOT as URL query params. A middleware or
+ * server action would be needed to parse them properly. For inline checkout,
+ * none of this applies.
+ */
+
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 
 function CallbackHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const txnref = searchParams.get("txnref");
-    const amount = searchParams.get("amount");
-    const resp = searchParams.get("resp");
+    // In the Web Redirect flow, Interswitch POSTs the form back to this URL.
+    // However, since Next.js App Router client components can only read GET params,
+    // we fall back to sessionStorage to get the txnRef and amount we stored
+    // before redirecting — which is safer anyway (avoids trusting the redirect params).
+    const txnRef = sessionStorage.getItem("txn_ref");
+    const amount = sessionStorage.getItem("txn_amount");
 
-    // Basic guard — if nothing came back, go home
-    if (!txnref) {
+    if (!txnRef || !amount) {
+      // No session data — something went wrong, send back to checkout
       router.replace("/checkout");
       return;
     }
 
-    // Cross-check txnref against what we stored before redirecting to Interswitch
-    const storedTxnref = sessionStorage.getItem("txn_ref");
-    const storedAmount = sessionStorage.getItem("txn_amount");
-
-    if (txnref !== storedTxnref) {
-      // txnref mismatch — possible tamper or stale session
-      router.replace("/result?status=failure&reason=ref_mismatch");
-      return;
-    }
-
-    if (amount !== storedAmount) {
-      // Amount mismatch — flag it
-      router.replace("/result?status=failure&reason=amount_mismatch");
-      return;
-    }
-
-    // Everything looks consistent — pass to /result for server-side verification
-    // We do NOT trust resp here. /result will requery Interswitch to confirm.
-    router.replace(`/result?txnref=${txnref}&amount=${amount}&resp=${resp ?? ""}`);
-  }, [searchParams, router]);
+    // Forward to /result for server-side verification.
+    // We intentionally do NOT forward `resp` from the URL — the requery is authoritative.
+    router.replace(`/result?txnref=${txnRef}&amount=${amount}`);
+  }, [router, searchParams]);
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
@@ -48,7 +54,6 @@ function CallbackHandler() {
   );
 }
 
-// useSearchParams must be wrapped in Suspense in Next.js App Router
 export default function CallbackPage() {
   return (
     <Suspense
