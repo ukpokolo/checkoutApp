@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getProductById, DEFAULT_PRODUCT_ID } from "@/lib/data/products";
 import { formatToNaira } from "@/lib/utils";
 import OrderSummary from "@/components/checkout/OrderSummary";
-import PayButton from "@/components/checkout/PayButton";
+import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   setInitiating,
@@ -23,17 +23,12 @@ declare global {
   }
 }
 
-const CUSTOMER = {
-  email: "test@example.com",
-  name: "Test User",
-  phone: "08000000000",
-};
-
 export default function CheckoutPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const paymentStatus = useAppSelector((state) => state.payment.status);
   const isInitialMount = useRef(true);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
 
   const product = getProductById(DEFAULT_PRODUCT_ID);
   const [initPayment, { isLoading: isInitiating }] = useInitPaymentMutation();
@@ -62,7 +57,13 @@ export default function CheckoutPage() {
       }
     }
     if (paymentStatus === "cancelled" || paymentStatus === "failed") {
-      router.push("/result?ref=none");
+      const txnRef = sessionStorage.getItem("txn_ref");
+      const amount = sessionStorage.getItem("txn_amount");
+      if (txnRef && amount) {
+        router.push(`/result?txnref=${txnRef}&amount=${amount}`);
+      } else {
+        router.push("/result?ref=none");
+      }
     }
   }, [paymentStatus, router]);
 
@@ -74,7 +75,12 @@ export default function CheckoutPage() {
     );
   }
 
-  async function handlePayNow() {
+  async function handleFormSubmit(data: CustomerData) {
+    setCustomerData(data);
+    await initiatePayment(data);
+  }
+
+  async function initiatePayment(customer: CustomerData) {
     if (!product) return;
 
     dispatch(setInitiating());
@@ -82,9 +88,9 @@ export default function CheckoutPage() {
     try {
       const result = await initPayment({
         amount: product.price,
-        customerEmail: CUSTOMER.email,
-        customerName: CUSTOMER.name,
-        customerPhone: CUSTOMER.phone,
+        customerEmail: customer.email,
+        customerName: customer.name,
+        customerPhone: customer.phone,
       }).unwrap();
 
       dispatch(setProcessing({ txnRef: result.txnRef, amount: result.amount }));
@@ -115,7 +121,7 @@ export default function CheckoutPage() {
         },
         onClose: () => {
           // User closed modal without completing — go back to idle
-          dispatch(setFailed("Payment cancelled by user."));
+            dispatch(setFailed("Payment cancelled by user."));
         },
       });
     } catch {
@@ -123,25 +129,33 @@ export default function CheckoutPage() {
     }
   }
 
+  const isProcessing = isInitiating || paymentStatus === "initiating" || paymentStatus === "processing";
+
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-bold text-gray-900">Checkout</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Review your order before payment
+          Review your order and enter your details
         </p>
       </div>
 
-      {/* Order Summary */}
-      <OrderSummary product={product} />
+      <div className="w-full max-w-md space-y-6">
+        {/* Order Summary */}
+        <OrderSummary product={product} />
 
-      {/* Pay Button */}
-      <PayButton
-        onClick={handlePayNow}
-        isLoading={isInitiating || paymentStatus === "initiating" || paymentStatus === "processing"}
-        amount={formatToNaira(product.price)}
-      />
+        {/* Customer Form */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Customer Details
+          </h2>
+          <CustomerForm
+            onSubmit={handleFormSubmit}
+            isLoading={isProcessing}
+          />
+        </div>
+      </div>
 
       <p className="text-xs text-gray-400 mt-4 text-center">
         Secured by Interswitch. Your payment info is encrypted.
