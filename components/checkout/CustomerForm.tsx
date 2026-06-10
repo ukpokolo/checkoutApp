@@ -90,7 +90,7 @@ export function CustomerForm({ onSubmit, isLoading = false }: CustomerFormProps)
           onChange={(e) => handleChange("name", e.target.value)}
           onBlur={() => handleBlur("name")}
           placeholder="John Doe"
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+          className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
             errors.name && touched.name
               ? "border-red-500 focus:ring-red-500"
               : "border-gray-300"
@@ -116,7 +116,7 @@ export function CustomerForm({ onSubmit, isLoading = false }: CustomerFormProps)
           onChange={(e) => handleChange("email", e.target.value)}
           onBlur={() => handleBlur("email")}
           placeholder="john@example.com"
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+          className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
             errors.email && touched.email
               ? "border-red-500 focus:ring-red-500"
               : "border-gray-300"
@@ -142,7 +142,7 @@ export function CustomerForm({ onSubmit, isLoading = false }: CustomerFormProps)
           onChange={(e) => handleChange("phone", e.target.value)}
           onBlur={() => handleBlur("phone")}
           placeholder="+234 123 456 7890"
-          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+          className={`w-full px-3 py-2 border rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
             errors.phone && touched.phone
               ? "border-red-500 focus:ring-red-500"
               : "border-gray-300"
