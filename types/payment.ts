@@ -23,11 +23,7 @@ export type PaymentWidgetParams = {
   onClose: () => void;
 };
 
-/**
- * Shape returned by the Interswitch inline widget's onComplete callback.
- * Key difference from what many assume: the response code field is `resp`,
- * NOT `responseCode`. `txnref` is also all lowercase.
- */
+
 export type ISWCallbackResponse = {
   resp: string;      // response code e.g. "00" for success
   txnref: string;    // transaction reference (all lowercase)
@@ -46,11 +42,3 @@ export type VerifyResponse = {
 
 export type PaymentStatus = "success" | "failure" | "pending";
 
-// What arrives as query params at /callback (Web Redirect flow only)
-export type CallbackSearchParams = {
-  txnref: string;
-  amount: string;
-  resp: string;
-  desc?: string;
-  retRef?: string;
-};

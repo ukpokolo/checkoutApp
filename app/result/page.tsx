@@ -28,7 +28,6 @@ function ResultHandler() {
     { skip: shouldSkip }
   );
 
-  // Sync RTK Query result into the payment FSM slice
   useEffect(() => {
     if (data) {
       dispatch(
@@ -43,7 +42,6 @@ function ResultHandler() {
     }
   }, [data, isError, dispatch]);
 
-  // Missing required params - show failure immediately without flickering
   if (!hasRequiredParams && !reason) {
     return (
       <FailureView

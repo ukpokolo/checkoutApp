@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 
 function generateTxnRef(): string {
-  return `TXN-${Date.now()}-${Math.random().toString(36).slice(2).toUpperCase()}`;
+  const randomPart = randomBytes(8).toString("hex").toUpperCase();
+  return `TXN-${Date.now()}-${randomPart}`;
 }
 
 export async function POST(req: NextRequest) {

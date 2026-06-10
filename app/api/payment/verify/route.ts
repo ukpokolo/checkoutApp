@@ -30,11 +30,14 @@ export async function GET(req: NextRequest) {
   try {
     const isTest = process.env.NEXT_PUBLIC_INTERSWITCH_ENV === "TEST";
     const requeryBase = isTest
-      ? "https://qa.interswitchng.com"
-      : "https://webpay.interswitchng.com";
+      ? process.env.INTERSWITCH_API_BASE_URL_TEST 
+      : process.env.INTERSWITCH_API_BASE_URL_LIVE 
+    const requeryPath =
+      process.env.INTERSWITCH_REQUERY_PATH ||
+      "/collections/api/v1/gettransaction.json";
 
     const requeryRes = await fetch(
-      `${requeryBase}/collections/api/v1/gettransaction.json` +
+      `${requeryBase}${requeryPath}` +
         `?merchantcode=${process.env.INTERSWITCH_MERCHANT_CODE}` +
         `&transactionreference=${txnRef}` +
         `&amount=${claimedAmount}`,

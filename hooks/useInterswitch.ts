@@ -10,8 +10,10 @@ export function useInterswitch() {
 
     const scriptSrc =
       process.env.NEXT_PUBLIC_INTERSWITCH_ENV === "TEST"
-        ? "https://newwebpay-sandbox.interswitchng.com/inline-checkout.js"
-        : "https://newwebpay.interswitchng.com/inline-checkout.js";
+        ? process.env.NEXT_PUBLIC_INTERSWITCH_SCRIPT_URL_TEST ||
+          "https://newwebpay.qa.interswitchng.com/inline-checkout.js"
+        : process.env.NEXT_PUBLIC_INTERSWITCH_SCRIPT_URL_LIVE ||
+          "https://newwebpay.interswitchng.com/inline-checkout.js";
 
     const existing = document.querySelector(`script[src="${scriptSrc}"]`);
     if (existing) {
