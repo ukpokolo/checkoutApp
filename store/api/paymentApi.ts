@@ -25,6 +25,9 @@ interface VerifyPaymentResult {
   amount: number;
   responseCode: string;
   message: string;
+  merchantReference?: string;
+  paymentReference?: string;
+  transactionDate?: string;
 }
 
 export const paymentApi = createApi({

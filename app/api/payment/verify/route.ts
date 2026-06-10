@@ -102,6 +102,9 @@ export async function GET(req: NextRequest) {
       amount: returnedAmount,
       responseCode,
       message: data.ResponseDescription ?? "Unknown",
+      merchantReference: data.MerchantReference,
+      paymentReference: data.PaymentReference,
+      transactionDate: data.TransactionDate,
     });
   } catch {
     return NextResponse.json(

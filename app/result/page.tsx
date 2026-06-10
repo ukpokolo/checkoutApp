@@ -70,16 +70,17 @@ function ResultHandler() {
   }
 
   if (data.status === "success") {
-    // Build VerifyResponse shape for SuccessView from what we have
+    // Build VerifyResponse shape for SuccessView from Interswitch data
+    // MerchantReference is our reference (txnRef), PaymentReference is Interswitch's own reference
     return (
       <SuccessView
         data={{
           ResponseCode: data.responseCode,
           ResponseDescription: data.message,
           Amount: data.amount,
-          MerchantReference: data.txnRef,
-          PaymentReference: data.txnRef,
-          TransactionDate: new Date().toISOString(),
+          MerchantReference: data.merchantReference ?? data.txnRef,
+          PaymentReference: data.paymentReference ?? data.txnRef,
+          TransactionDate: data.transactionDate ?? new Date().toISOString(),
         }}
       />
     );

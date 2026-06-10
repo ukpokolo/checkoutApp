@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getProductById, DEFAULT_PRODUCT_ID } from "@/lib/data/products";
-import { formatToNaira } from "@/lib/utils";
 import OrderSummary from "@/components/checkout/OrderSummary";
 import { CustomerForm, CustomerData } from "@/components/checkout/CustomerForm";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -22,9 +21,6 @@ declare global {
     webpayCheckout: (request: object) => void;
   }
 }
-
-// Actual shape returned by the Interswitch inline widget's onComplete callback.
-// The SDK uses `resp` (not `responseCode`) and `txnref` (lowercase, no capital R).
 interface ISWCallbackResponse {
   resp: string;       // response code e.g. "00"
   txnref: string;     // transaction reference
@@ -37,7 +33,6 @@ export default function CheckoutPage() {
   const dispatch = useAppDispatch();
   const paymentStatus = useAppSelector((state) => state.payment.status);
   const isInitialMount = useRef(true);
-  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
 
   const product = getProductById(DEFAULT_PRODUCT_ID);
   const [initPayment, { isLoading: isInitiating }] = useInitPaymentMutation();
@@ -84,7 +79,6 @@ export default function CheckoutPage() {
   }
 
   async function handleFormSubmit(data: CustomerData) {
-    setCustomerData(data);
     await initiatePayment(data);
   }
 
